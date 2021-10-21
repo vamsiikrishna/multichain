@@ -94,6 +94,20 @@ func (client *Client) GetAccountData(account address.Address) (pack.Bytes, error
 	return pack.Bytes(data), nil
 }
 
+// GetTransaction fethes and returns the response from a `getTransaction` RPC call.
+func (client *Client) GetTransaction(txid pack.Bytes) (pack.Bytes, error) {
+	params := json.RawMessage(fmt.Sprintf(`["%v"]`, string(txid)))
+	res, err := SendDataWithRetry("getTransaction", params, client.opts.RPCURL)
+	if err != nil {
+		return nil, fmt.Errorf("calling rpc method \"getTransaction\": %v", err)
+	}
+	if res.Result == nil {
+		return nil, fmt.Errorf("decoding result: empty")
+	}
+
+	return pack.Bytes([]byte(*res.Result)), nil
+}
+
 // CallContract implements the multichain Contract API. In the case of Solana,
 // it is used to fetch burn logs associated with a particular burn nonce.
 func (client *Client) CallContract(
